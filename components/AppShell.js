@@ -32,7 +32,7 @@ export default function AppShell({ children }) {
     <div className="min-h-screen flex">
       <div className="lg:hidden fixed top-0 inset-x-0 h-14 bg-navy-900/90 backdrop-blur-xl border-b border-amber-400/10 z-40 flex items-center justify-between px-4">
         <button onClick={() => setOpen(true)} className="text-slate-300"><Menu size={22} /></button>
-        <span className="font-display font-bold text-slate-100">منصة السنتر</span>
+        <span className="font-display font-bold text-slate-100">منصة ZSH</span>
         <div className="w-6" />
       </div>
 
