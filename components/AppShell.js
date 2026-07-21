@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import {
   LayoutDashboard, Users, CalendarCheck, Wallet, FolderKanban,
-  FileBarChart, Settings, LogOut, Menu, X,
+  FileBarChart, Settings, LogOut, Menu, X, Video,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 import { isTeacherUser } from '@/lib/auth';
@@ -19,6 +19,7 @@ const NAV = [
   { href: '/payments', label: 'المصروفات الشهرية', icon: Wallet },
   { href: '/groups', label: 'المجموعات', icon: FolderKanban },
   { href: '/reports', label: 'التقارير', icon: FileBarChart },
+  { href: '/videos', label: 'الفيديوهات', icon: Video },
   { href: '/settings', label: 'الإعدادات', icon: Settings },
 ];
 
