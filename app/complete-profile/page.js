@@ -30,6 +30,7 @@ export default function CompleteProfilePage() {
         grade,
         phone: phone.trim(),
         profile_completed: true,
+        is_online: true,
         monthly_price: 0,
       },
       { onConflict: 'user_id' }
