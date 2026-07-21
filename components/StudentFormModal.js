@@ -38,12 +38,20 @@ export default function StudentFormModal({ student, groups, onClose, onSave }) {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-slate-400 mb-1 block">رقم الهاتف</label>
-              <input value={form.phone} onChange={set('phone')} className="input-field" />
+              <label className="text-xs text-slate-400 mb-1 block">رقم الهاتف *</label>
+              <input
+                required type="tel" value={form.phone} onChange={set('phone')} className="input-field"
+                pattern="01[0-9]{9}" title="رقم هاتف مصري صحيح مكوّن من 11 رقم (يبدأ بـ 01)"
+                placeholder="01xxxxxxxxx"
+              />
             </div>
             <div>
-              <label className="text-xs text-slate-400 mb-1 block">رقم ولي الأمر</label>
-              <input value={form.parent_phone} onChange={set('parent_phone')} className="input-field" />
+              <label className="text-xs text-slate-400 mb-1 block">رقم ولي الأمر *</label>
+              <input
+                required type="tel" value={form.parent_phone} onChange={set('parent_phone')} className="input-field"
+                pattern="01[0-9]{9}" title="رقم هاتف مصري صحيح مكوّن من 11 رقم (يبدأ بـ 01)"
+                placeholder="01xxxxxxxxx"
+              />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
