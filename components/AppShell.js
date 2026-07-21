@@ -7,7 +7,6 @@ import {
   FileBarChart, Settings, LogOut, Menu, X,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
-import Image from 'next/image';
 
 const NAV = [
   { href: '/dashboard', label: 'الرئيسية', icon: LayoutDashboard },
@@ -41,9 +40,7 @@ export default function AppShell({ children }) {
         ${open ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}`}>
         <div className="flex items-center justify-between p-5 border-b border-amber-400/10">
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 relative">
-              <Image src="/logo.png" alt="ZSH" fill className="object-contain" />
-            </div>
+            <img src="/logo.svg" alt="ZSH" className="w-9 h-9" />
             <span className="font-display font-bold text-slate-100">الشاهين للفيزياء</span>
           </div>
           <button onClick={() => setOpen(false)} className="lg:hidden text-slate-400"><X size={20} /></button>

@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { Lock, Mail } from 'lucide-react';
-import Image from 'next/image';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -38,9 +37,7 @@ export default function LoginPage() {
 
       <div className="relative z-10 w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-20 h-20 relative mb-4">
-            <Image src="/logo.png" alt="ZSH" fill className="object-contain drop-shadow-[0_0_20px_rgba(14,165,233,0.4)]" />
-          </div>
+          <img src="/logo.svg" alt="ZSH" className="w-24 h-24 mb-4 drop-shadow-[0_0_20px_rgba(14,165,233,0.4)]" />
           <h1 className="font-display text-2xl font-extrabold text-slate-100">منصة ZSH</h1>
           <p className="text-slate-400 text-sm mt-1">تسجيل دخول المُدرّس</p>
         </div>
