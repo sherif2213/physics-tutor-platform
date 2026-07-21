@@ -22,16 +22,18 @@ export async function middleware(request) {
 
   const { data: { session } } = await supabase.auth.getSession();
   const isLoginPage = request.nextUrl.pathname === '/login';
+  const isSignupPage = request.nextUrl.pathname === '/signup';
+  const isPublicPage = isLoginPage || isSignupPage;
 
   // When offline, the client never even reaches the server for navigation
   // (service worker serves the app shell), so this check only governs
   // online navigations — offline sessions keep working from cached state.
-  if (!session && !isLoginPage) {
+  if (!session && !isPublicPage) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);
   }
-  if (session && isLoginPage) {
+  if (session && isPublicPage) {
     const url = request.nextUrl.clone();
     url.pathname = '/dashboard';
     return NextResponse.redirect(url);
