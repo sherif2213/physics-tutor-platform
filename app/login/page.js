@@ -140,9 +140,6 @@ export default function AuthPage() {
         ) : (
           <form onSubmit={handleSignup} className="glass-card p-6 space-y-4">
             <div>
-          
-            </div>
-            <div>
               <label className="text-sm text-slate-300 mb-1.5 block">البريد الإلكتروني</label>
               <div className="relative">
                 <Mail className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
