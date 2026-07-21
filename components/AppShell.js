@@ -7,7 +7,6 @@ import {
   FileBarChart, Settings, LogOut, Menu, X, Atom,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
-import PhysicsBackground from './PhysicsBackground';
 
 const NAV = [
   { href: '/dashboard', label: 'الرئيسية', icon: LayoutDashboard },
@@ -30,19 +29,16 @@ export default function AppShell({ children }) {
   };
 
   return (
-    <div className="min-h-screen bg-navy-950 bg-joy-gradient grid-overlay flex relative">
-          <PhysicsBackground />
-      {/* Mobile top bar */}
-      <div className="lg:hidden fixed top-0 inset-x-0 h-14 bg-navy-900/90 backdrop-blur-xl border-b border-white/[0.06] z-40 flex items-center justify-between px-4">
+    <div className="min-h-screen flex">
+      <div className="lg:hidden fixed top-0 inset-x-0 h-14 bg-navy-900/90 backdrop-blur-xl border-b border-amber-400/10 z-40 flex items-center justify-between px-4">
         <button onClick={() => setOpen(true)} className="text-slate-300"><Menu size={22} /></button>
         <span className="font-display font-bold text-slate-100">منصة السنتر</span>
         <div className="w-6" />
       </div>
 
-      {/* Sidebar */}
-      <aside className={`fixed lg:sticky top-0 h-screen w-64 bg-navy-900/95 backdrop-blur-xl border-l border-white/[0.06] z-50 transition-transform duration-300 flex flex-col
+      <aside className={`fixed lg:sticky top-0 h-screen w-64 bg-navy-900/95 backdrop-blur-xl border-l border-amber-400/10 z-50 transition-transform duration-300 flex flex-col
         ${open ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}`}>
-        <div className="flex items-center justify-between p-5 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between p-5 border-b border-amber-400/10">
           <div className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-teal-500 flex items-center justify-center">
               <Atom className="text-navy-950" size={18} />
@@ -66,7 +62,7 @@ export default function AppShell({ children }) {
           })}
         </nav>
 
-        <div className="p-3 border-t border-white/[0.06]">
+        <div className="p-3 border-t border-amber-400/10">
           <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/[0.08] w-full transition-all">
             <LogOut size={18} />
             تسجيل الخروج
