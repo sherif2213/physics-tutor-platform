@@ -38,7 +38,8 @@ export default function CompleteProfilePage() {
     setLoading(false);
 
     if (upsertError) {
-      setError('حصل خطأ أثناء حفظ بياناتك، حاول تاني');
+      console.error('Complete profile error:', upsertError);
+      setError(`خطأ: ${upsertError.message}`);
       return;
     }
 
