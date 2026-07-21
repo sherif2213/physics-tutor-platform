@@ -13,30 +13,30 @@ module.exports = {
       },
       colors: {
         navy: {
-          950: '#120B29',
-          900: '#1B1240',
-          800: '#261A5C',
-          700: '#332278',
+          950: '#05070F',
+          900: '#0A0F1F',
+          800: '#111A33',
+          700: '#1B2747',
         },
         amber: {
-          400: '#FFA24C',
-          500: '#FF7A3D',
+          400: '#FFD466',
+          500: '#F5B400',
         },
         teal: {
-          400: '#2FE6C9',
-          500: '#00C9A7',
+          400: '#4FC3F7',
+          500: '#0EA5E9',
         },
       },
       backgroundImage: {
         'grid-lines': 'linear-gradient(rgba(148,163,184,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.06) 1px, transparent 1px)',
-        'joy-gradient': 'radial-gradient(circle at 15% 20%, rgba(255,122,61,0.18), transparent 40%), radial-gradient(circle at 85% 75%, rgba(0,201,167,0.18), transparent 40%), radial-gradient(circle at 50% 50%, rgba(139,92,246,0.12), transparent 55%)',
+        'joy-gradient': 'radial-gradient(circle at 15% 20%, rgba(14,165,233,0.20), transparent 40%), radial-gradient(circle at 85% 75%, rgba(245,180,0,0.16), transparent 40%), radial-gradient(circle at 50% 50%, rgba(79,195,247,0.10), transparent 55%)',
       },
       backgroundSize: {
         grid: '32px 32px',
       },
       boxShadow: {
-        glow: '0 0 40px rgba(255,122,61,0.25)',
-        glass: '0 8px 32px rgba(0,0,0,0.25)',
+        glow: '0 0 40px rgba(14,165,233,0.35)',
+        glass: '0 8px 32px rgba(0,0,0,0.4)',
       },
       keyframes: {
         float: {
@@ -53,7 +53,7 @@ module.exports = {
         },
         glowPulse: {
           '0%, 100%': { opacity: 0.35 },
-          '50%': { opacity: 0.75 },
+          '50%': { opacity: 0.8 },
         },
       },
       animation: {
