@@ -4,6 +4,37 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { Lock, Mail } from 'lucide-react';
 
+function LoginLogo() {
+  return (
+    <svg width="96" height="96" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="mb-4 drop-shadow-[0_0_20px_rgba(240,165,0,0.35)]">
+      <defs>
+        <linearGradient id="loginRing1" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#F5B942" />
+          <stop offset="100%" stopColor="#F0A500" />
+        </linearGradient>
+        <linearGradient id="loginRing2" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0%" stopColor="#2DD4BF" />
+          <stop offset="100%" stopColor="#14B8A6" />
+        </linearGradient>
+        <radialGradient id="loginBg" cx="50%" cy="50%" r="70%">
+          <stop offset="0%" stopColor="#111A33" />
+          <stop offset="100%" stopColor="#05070F" />
+        </radialGradient>
+      </defs>
+      <circle cx="100" cy="100" r="97" fill="url(#loginBg)" stroke="#F5B942" strokeWidth="2.5" opacity="0.95" />
+      <g fill="none" strokeWidth="3">
+        <ellipse cx="100" cy="100" rx="72" ry="30" stroke="url(#loginRing1)" />
+        <ellipse cx="100" cy="100" rx="72" ry="30" transform="rotate(60 100 100)" stroke="url(#loginRing2)" />
+        <ellipse cx="100" cy="100" rx="72" ry="30" transform="rotate(120 100 100)" stroke="url(#loginRing1)" opacity="0.8" />
+      </g>
+      <circle cx="100" cy="100" r="11" fill="url(#loginRing2)" />
+      <circle cx="172" cy="100" r="5" fill="#F5B942" />
+      <circle cx="64" cy="43" r="5" fill="#2DD4BF" />
+      <circle cx="64" cy="157" r="5" fill="#F5B942" />
+    </svg>
+  );
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -37,7 +68,7 @@ export default function LoginPage() {
 
       <div className="relative z-10 w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
-          <img src="/logo.svg" alt="ZSH" className="w-24 h-24 mb-4 drop-shadow-[0_0_20px_rgba(14,165,233,0.4)]" />
+          <LoginLogo />
           <h1 className="font-display text-2xl font-extrabold text-slate-100">منصة ZSH</h1>
           <p className="text-slate-400 text-sm mt-1">تسجيل دخول المُدرّس</p>
         </div>
