@@ -2,45 +2,17 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
-import { Lock, Mail } from 'lucide-react';
+import { Lock, Mail, Phone } from 'lucide-react';
 
-function LoginLogo() {
-  return (
-    <svg width="96" height="96" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="mb-4 drop-shadow-[0_0_20px_rgba(240,165,0,0.35)]">
-      <defs>
-        <linearGradient id="loginRing1" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#F5B942" />
-          <stop offset="100%" stopColor="#F0A500" />
-        </linearGradient>
-        <linearGradient id="loginRing2" x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0%" stopColor="#2DD4BF" />
-          <stop offset="100%" stopColor="#14B8A6" />
-        </linearGradient>
-        <radialGradient id="loginBg" cx="50%" cy="50%" r="70%">
-          <stop offset="0%" stopColor="#111A33" />
-          <stop offset="100%" stopColor="#05070F" />
-        </radialGradient>
-      </defs>
-      <circle cx="100" cy="100" r="97" fill="url(#loginBg)" stroke="#F5B942" strokeWidth="2.5" opacity="0.95" />
-      <g fill="none" strokeWidth="3">
-        <ellipse cx="100" cy="100" rx="72" ry="30" stroke="url(#loginRing1)" />
-        <ellipse cx="100" cy="100" rx="72" ry="30" transform="rotate(60 100 100)" stroke="url(#loginRing2)" />
-        <ellipse cx="100" cy="100" rx="72" ry="30" transform="rotate(120 100 100)" stroke="url(#loginRing1)" opacity="0.8" />
-      </g>
-      <circle cx="100" cy="100" r="11" fill="url(#loginRing2)" />
-      <circle cx="172" cy="100" r="5" fill="#F5B942" />
-      <circle cx="64" cy="43" r="5" fill="#2DD4BF" />
-      <circle cx="64" cy="157" r="5" fill="#F5B942" />
-    </svg>
-  );
-}
-
-export default function LoginPage() {
+export default function AuthPage() {
   const router = useRouter();
+  const [mode, setMode] = useState('login'); // 'login' | 'signup'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [notFound, setNotFound] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -56,6 +28,71 @@ export default function LoginPage() {
     router.refresh();
   };
 
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    if (signUpError) {
+      setLoading(false);
+      if (signUpError.message?.includes('already registered')) {
+        setError('فيه حساب مسجل بالإيميل ده بالفعل، جرب تسجيل الدخول');
+      } else {
+        setError('حصل خطأ أثناء إنشاء الحساب، حاول تاني');
+      }
+      return;
+    }
+
+    if (!signUpData.session) {
+      setLoading(false);
+      setError('تم إنشاء الحساب. تحقق من إيميلك لتفعيله، وبعدين سجّل دخول.');
+      return;
+    }
+
+    const { data: linkData, error: linkError } = await supabase.rpc('link_student_account', {
+      p_phone: phone.trim(),
+    });
+
+    setLoading(false);
+
+    if (linkError || !linkData?.success) {
+      setNotFound(true);
+      return;
+    }
+
+    router.push('/student');
+    router.refresh();
+  };
+
+  const switchMode = (newMode) => {
+    setMode(newMode);
+    setError('');
+    setNotFound(false);
+  };
+
+  if (notFound) {
+    return (
+      <main className="min-h-screen grid-overlay bg-navy-950 flex items-center justify-center px-4">
+        <div className="relative z-10 w-full max-w-sm text-center glass-card p-6">
+          <h1 className="font-display text-xl font-extrabold text-slate-100 mb-2">
+            محدش لقيناه بالرقم ده
+          </h1>
+          <p className="text-slate-400 text-sm mb-6">
+            رقم التليفون اللي كتبته مش مطابق لأي طالب مسجل عند المُدرّس. تأكد إن الرقم هو نفسه اللي المُدرّس مسجله بيه.
+          </p>
+          <button onClick={() => switchMode('signup')} className="btn-primary w-full">
+            رجوع
+          </button>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen grid-overlay bg-navy-950 flex items-center justify-center px-4 relative overflow-hidden">
       <svg className="absolute -top-24 -left-24 w-[520px] h-[520px] opacity-30 pointer-events-none" viewBox="0 0 400 400">
@@ -68,39 +105,104 @@ export default function LoginPage() {
 
       <div className="relative z-10 w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
-          <LoginLogo />
+          <img src="/logo.svg" alt="ZSH" className="w-24 h-24 mb-4 drop-shadow-[0_0_20px_rgba(14,165,233,0.4)]" />
           <h1 className="font-display text-2xl font-extrabold text-slate-100">منصة ZSH</h1>
-          <p className="text-slate-400 text-sm mt-1">تسجيل دخول المُدرّس</p>
+          <p className="text-slate-400 text-sm mt-1">
+            {mode === 'login' ? 'تسجيل دخول المُدرّس / الطالب' : 'إنشاء حساب طالب'}
+          </p>
         </div>
 
-        <form onSubmit={handleLogin} className="glass-card p-6 space-y-4">
-          <div>
-            <label className="text-sm text-slate-300 mb-1.5 block">البريد الإلكتروني</label>
-            <div className="relative">
-              <Mail className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-              <input
-                type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-                className="input-field pr-10" placeholder="teacher@example.com"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="text-sm text-slate-300 mb-1.5 block">كلمة المرور</label>
-            <div className="relative">
-              <Lock className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-              <input
-                type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
-                className="input-field pr-10" placeholder="••••••••"
-              />
-            </div>
-          </div>
-
-          {error && <p className="text-red-400 text-sm">{error}</p>}
-
-          <button type="submit" disabled={loading} className="btn-primary w-full">
-            {loading ? 'جارٍ الدخول...' : 'تسجيل الدخول'}
+        <div className="flex glass-card p-1 mb-4 rounded-xl">
+          <button
+            type="button"
+            onClick={() => switchMode('login')}
+            className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition ${
+              mode === 'login' ? 'bg-brand-500 text-navy-950' : 'text-slate-400'
+            }`}
+          >
+            تسجيل الدخول
           </button>
-        </form>
+          <button
+            type="button"
+            onClick={() => switchMode('signup')}
+            className={`flex-1 py-2.5 rounded-lg text-sm font-bold transition ${
+              mode === 'signup' ? 'bg-brand-500 text-navy-950' : 'text-slate-400'
+            }`}
+          >
+            إنشاء حساب طالب
+          </button>
+        </div>
+
+        {mode === 'login' ? (
+          <form onSubmit={handleLogin} className="glass-card p-6 space-y-4">
+            <div>
+              <label className="text-sm text-slate-300 mb-1.5 block">البريد الإلكتروني</label>
+              <div className="relative">
+                <Mail className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                <input
+                  type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+                  className="input-field pr-10" placeholder="teacher@example.com"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm text-slate-300 mb-1.5 block">كلمة المرور</label>
+              <div className="relative">
+                <Lock className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                <input
+                  type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
+                  className="input-field pr-10" placeholder="••••••••"
+                />
+              </div>
+            </div>
+
+            {error && <p className="text-red-400 text-sm">{error}</p>}
+
+            <button type="submit" disabled={loading} className="btn-primary w-full">
+              {loading ? 'جارٍ الدخول...' : 'تسجيل الدخول'}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleSignup} className="glass-card p-6 space-y-4">
+            <div>
+              <label className="text-sm text-slate-300 mb-1.5 block">رقم تليفونك (نفس المسجل عند المُدرّس)</label>
+              <div className="relative">
+                <Phone className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                <input
+                  type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)}
+                  className="input-field pr-10" placeholder="01xxxxxxxxx"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm text-slate-300 mb-1.5 block">البريد الإلكتروني</label>
+              <div className="relative">
+                <Mail className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                <input
+                  type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+                  className="input-field pr-10" placeholder="student@example.com"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-sm text-slate-300 mb-1.5 block">كلمة المرور</label>
+              <div className="relative">
+                <Lock className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
+                <input
+                  type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)}
+                  className="input-field pr-10" placeholder="••••••••"
+                />
+              </div>
+            </div>
+
+            {error && <p className="text-red-400 text-sm">{error}</p>}
+
+            <button type="submit" disabled={loading} className="btn-primary w-full">
+              {loading ? 'جارٍ إنشاء الحساب...' : 'إنشاء الحساب'}
+            </button>
+          </form>
+        )}
+
         <p className="text-center text-slate-500 text-xs mt-6">تعمل هذه المنصة بدون إنترنت بعد أول تسجيل دخول</p>
       </div>
     </main>
