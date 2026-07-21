@@ -9,6 +9,7 @@ import {
 import { supabase } from '@/lib/supabaseClient';
 import ThemeToggle from './ThemeToggle';
 import QuranPlayer from './QuranPlayer';
+import AzkarPanel from './AzkarPanel';
 
 const NAV = [
   { href: '/dashboard', label: 'الرئيسية', icon: LayoutDashboard },
@@ -20,20 +21,20 @@ const NAV = [
   { href: '/settings', label: 'الإعدادات', icon: Settings },
 ];
 
-function LogoMark({ size = 36 }) {
+function LogoMark({ width = 64, height = 32 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width={width} height={height} viewBox="0 0 96 48" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <linearGradient id="logoGrad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+        <linearGradient id="logoGrad" x1="0" y1="0" x2="96" y2="48" gradientUnits="userSpaceOnUse">
           <stop stopColor="#F5B942" />
           <stop offset="1" stopColor="#2DD4BF" />
         </linearGradient>
       </defs>
-      <rect width="40" height="40" rx="11" fill="url(#logoGrad)" />
-      <ellipse cx="20" cy="20" rx="13" ry="6" stroke="#0B1220" strokeWidth="1.6" transform="rotate(30 20 20)" opacity="0.9" />
-      <ellipse cx="20" cy="20" rx="13" ry="6" stroke="#0B1220" strokeWidth="1.6" transform="rotate(-30 20 20)" opacity="0.9" />
-      <circle cx="20" cy="20" r="3.4" fill="#0B1220" />
-      <circle cx="31.5" cy="14.2" r="2.1" fill="#0B1220" />
+      <rect width="96" height="48" rx="12" fill="url(#logoGrad)" />
+      <text x="48" y="30" textAnchor="middle" fontFamily="Arial, Helvetica, sans-serif" fontWeight="800" fontSize="22" letterSpacing="3" fill="#0B1220">ZSH</text>
+      <line x1="20" y1="37" x2="76" y2="37" stroke="#0B1220" strokeWidth="2" strokeLinecap="round" opacity="0.55" />
+      <circle cx="20" cy="37" r="2.2" fill="#0B1220" opacity="0.55" />
+      <circle cx="76" cy="37" r="2.2" fill="#0B1220" opacity="0.55" />
     </svg>
   );
 }
@@ -53,8 +54,8 @@ export default function AppShell({ children }) {
       <div className="lg:hidden fixed top-0 inset-x-0 h-14 bg-navy-900/90 backdrop-blur-xl border-b border-white/[0.06] z-40 flex items-center justify-between px-4">
         <button onClick={() => setOpen(true)} className="text-slate-300"><Menu size={22} /></button>
         <div className="flex items-center gap-2">
-          <LogoMark size={26} />
-          <span className="font-display font-bold text-slate-100">مركز الفيزياء</span>
+          <LogoMark width={48} height={24} />
+          <span className="font-display font-bold text-slate-100">الشاهين للفيزياء</span>
         </div>
         <ThemeToggle compact />
       </div>
@@ -64,7 +65,7 @@ export default function AppShell({ children }) {
         <div className="flex items-center justify-between p-5 border-b border-white/[0.06]">
           <div className="flex items-center gap-2">
             <LogoMark />
-            <span className="font-display font-bold text-slate-100">مركز الفيزياء</span>
+            <span className="font-display font-bold text-slate-100">الشاهين للفيزياء</span>
           </div>
           <button onClick={() => setOpen(false)} className="lg:hidden text-slate-400"><X size={20} /></button>
         </div>
@@ -99,6 +100,7 @@ export default function AppShell({ children }) {
       </main>
 
       <QuranPlayer />
+      <AzkarPanel />
     </div>
   );
 }
