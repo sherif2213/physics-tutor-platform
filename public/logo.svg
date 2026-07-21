@@ -1,26 +1,33 @@
 <svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="gz" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#4FC3F7"/>
-      <stop offset="100%" stop-color="#0EA5E9"/>
+    <linearGradient id="ring1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F5B942"/>
+      <stop offset="100%" stop-color="#F0A500"/>
     </linearGradient>
-    <linearGradient id="gs" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#FFD466"/>
-      <stop offset="100%" stop-color="#F5B400"/>
+    <linearGradient id="ring2" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#2DD4BF"/>
+      <stop offset="100%" stop-color="#14B8A6"/>
     </linearGradient>
-    <radialGradient id="bg" cx="50%" cy="50%" r="70%">
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
       <stop offset="0%" stop-color="#111A33"/>
       <stop offset="100%" stop-color="#05070F"/>
     </radialGradient>
   </defs>
-  <circle cx="100" cy="100" r="97" fill="url(#bg)" stroke="#F5B400" stroke-width="2.5" opacity="0.95"/>
-  <g stroke="#F5B400" fill="none" stroke-width="2.5" opacity="0.9">
-    <ellipse cx="100" cy="65" rx="52" ry="19" transform="rotate(0 100 65)"/>
-    <ellipse cx="100" cy="65" rx="52" ry="19" transform="rotate(60 100 65)"/>
-    <ellipse cx="100" cy="65" rx="52" ry="19" transform="rotate(120 100 65)"/>
+
+  <circle cx="100" cy="100" r="97" fill="url(#bgGrad)" stroke="#F5B942" stroke-width="2.5" opacity="0.95"/>
+
+  <g fill="none" stroke-width="3">
+    <ellipse cx="100" cy="100" rx="72" ry="30" transform="rotate(0 100 100)" stroke="url(#ring1)"/>
+    <ellipse cx="100" cy="100" rx="72" ry="30" transform="rotate(60 100 100)" stroke="url(#ring2)"/>
+    <ellipse cx="100" cy="100" rx="72" ry="30" transform="rotate(120 100 100)" stroke="url(#ring1)" opacity="0.8"/>
   </g>
-  <circle cx="100" cy="65" r="6" fill="#4FC3F7"/>
-  <text x="100" y="152" text-anchor="middle" font-family="Arial, sans-serif" font-weight="900" font-size="48">
-    <tspan fill="url(#gz)">Z</tspan><tspan fill="url(#gs)">S</tspan><tspan fill="#E5E7EB">H</tspan>
+
+  <circle cx="100" cy="100" r="11" fill="url(#ring2)"/>
+  <circle cx="172" cy="100" r="5" fill="#F5B942"/>
+  <circle cx="64" cy="43" r="5" fill="#2DD4BF"/>
+  <circle cx="64" cy="157" r="5" fill="#F5B942"/>
+
+  <text x="100" y="185" text-anchor="middle" font-family="Arial, sans-serif" font-weight="900" font-size="22" letter-spacing="2">
+    <tspan fill="#F5B942">Z</tspan><tspan fill="#2DD4BF">S</tspan><tspan fill="#E5E7EB">H</tspan>
   </text>
 </svg>
