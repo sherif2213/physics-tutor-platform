@@ -2,7 +2,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
-import { Lock, Mail, Atom } from 'lucide-react';
+import { Lock, Mail } from 'lucide-react';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,7 +28,6 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen grid-overlay bg-navy-950 flex items-center justify-center px-4 relative overflow-hidden">
-      {/* prism refraction signature element */}
       <svg className="absolute -top-24 -left-24 w-[520px] h-[520px] opacity-30 pointer-events-none" viewBox="0 0 400 400">
         <polygon points="200,60 320,300 80,300" fill="none" stroke="#F0A500" strokeWidth="1.5" />
         <line x1="0" y1="180" x2="150" y2="200" stroke="#F5B942" strokeWidth="2" opacity="0.7" />
@@ -38,8 +38,8 @@ export default function LoginPage() {
 
       <div className="relative z-10 w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-teal-500 flex items-center justify-center shadow-glow mb-4">
-            <Atom className="text-navy-950" size={28} />
+          <div className="w-20 h-20 relative mb-4">
+            <Image src="/logo.png" alt="ZSH" fill className="object-contain drop-shadow-[0_0_20px_rgba(14,165,233,0.4)]" />
           </div>
           <h1 className="font-display text-2xl font-extrabold text-slate-100">منصة ZSH</h1>
           <p className="text-slate-400 text-sm mt-1">تسجيل دخول المُدرّس</p>

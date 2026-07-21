@@ -4,9 +4,10 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import {
   LayoutDashboard, Users, CalendarCheck, Wallet, FolderKanban,
-  FileBarChart, Settings, LogOut, Menu, X, Atom,
+  FileBarChart, Settings, LogOut, Menu, X,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
+import Image from 'next/image';
 
 const NAV = [
   { href: '/dashboard', label: 'الرئيسية', icon: LayoutDashboard },
@@ -40,8 +41,8 @@ export default function AppShell({ children }) {
         ${open ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}`}>
         <div className="flex items-center justify-between p-5 border-b border-amber-400/10">
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-teal-500 flex items-center justify-center">
-              <Atom className="text-navy-950" size={18} />
+            <div className="w-9 h-9 relative">
+              <Image src="/logo.png" alt="ZSH" fill className="object-contain" />
             </div>
             <span className="font-display font-bold text-slate-100">الشاهين للفيزياء</span>
           </div>
