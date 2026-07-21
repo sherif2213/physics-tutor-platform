@@ -14,22 +14,22 @@
   }
   * {
     scrollbar-width: thin;
-    scrollbar-color: #F0A500 transparent;
+    scrollbar-color: #FF7A3D transparent;
   }
 }
 
 @layer components {
   .glass-card {
-    @apply bg-white/[0.04] backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-glass;
+    @apply bg-white/[0.05] backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-glass transition-all duration-300 hover:-translate-y-1 hover:shadow-glow hover:border-white/[0.15];
   }
   .glass-card-light {
     @apply bg-white/80 backdrop-blur-xl border border-slate-200 rounded-2xl shadow-lg;
   }
   .btn-primary {
-    @apply bg-gradient-to-l from-amber-500 to-amber-400 text-navy-950 font-bold rounded-xl px-5 py-2.5 shadow-glow transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
+    @apply bg-gradient-to-l from-amber-500 to-amber-400 text-navy-950 font-bold rounded-xl px-5 py-2.5 shadow-glow transition-all hover:scale-[1.03] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none;
   }
   .btn-secondary {
-    @apply bg-white/[0.06] border border-white/[0.1] text-slate-100 rounded-xl px-5 py-2.5 transition-all hover:bg-white/[0.1];
+    @apply bg-white/[0.06] border border-white/[0.1] text-slate-100 rounded-xl px-5 py-2.5 transition-all hover:bg-white/[0.1] hover:scale-[1.02];
   }
   .input-field {
     @apply w-full bg-white/[0.04] border border-white/[0.1] rounded-xl px-4 py-2.5 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400/50 transition-all;
@@ -42,10 +42,10 @@
     @apply aspect-square rounded-lg flex items-center justify-center text-sm font-bold cursor-pointer transition-all select-none border;
   }
   .lesson-present {
-    @apply bg-teal-500/20 border-teal-400/40 text-teal-300;
+    @apply bg-teal-500/20 border-teal-400/40 text-teal-300 scale-100 hover:scale-105;
   }
   .lesson-absent {
-    @apply bg-white/[0.03] border-white/[0.08] text-slate-500 hover:border-white/[0.2];
+    @apply bg-white/[0.03] border-white/[0.08] text-slate-500 hover:border-white/[0.2] hover:scale-105;
   }
 }
 

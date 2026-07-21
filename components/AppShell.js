@@ -7,6 +7,7 @@ import {
   FileBarChart, Settings, LogOut, Menu, X, Atom,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
+import PhysicsBackground from './PhysicsBackground';
 
 const NAV = [
   { href: '/dashboard', label: 'الرئيسية', icon: LayoutDashboard },
@@ -29,7 +30,8 @@ export default function AppShell({ children }) {
   };
 
   return (
-    <div className="min-h-screen bg-navy-950 grid-overlay flex">
+    <div className="min-h-screen bg-navy-950 bg-joy-gradient grid-overlay flex relative">
+          <PhysicsBackground />
       {/* Mobile top bar */}
       <div className="lg:hidden fixed top-0 inset-x-0 h-14 bg-navy-900/90 backdrop-blur-xl border-b border-white/[0.06] z-40 flex items-center justify-between px-4">
         <button onClick={() => setOpen(true)} className="text-slate-300"><Menu size={22} /></button>
