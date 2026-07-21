@@ -41,7 +41,7 @@ export default function LoginPage() {
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-teal-500 flex items-center justify-center shadow-glow mb-4">
             <Atom className="text-navy-950" size={28} />
           </div>
-          <h1 className="font-display text-2xl font-extrabold text-slate-100">منصة إدارة السنتر</h1>
+          <h1 className="font-display text-2xl font-extrabold text-slate-100">منصة ZSH</h1>
           <p className="text-slate-400 text-sm mt-1">تسجيل دخول المُدرّس</p>
         </div>
 
