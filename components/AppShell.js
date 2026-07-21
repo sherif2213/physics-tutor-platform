@@ -1,12 +1,13 @@
 'use client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   LayoutDashboard, Users, CalendarCheck, Wallet, FolderKanban,
   FileBarChart, Settings, LogOut, Menu, X,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
+import { getSettings } from '@/lib/dataStore';
 import ThemeToggle from './ThemeToggle';
 import QuranPlayer from './QuranPlayer';
 import AzkarPanel from './AzkarPanel';
@@ -43,6 +44,13 @@ export default function AppShell({ children }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [centerName, setCenterName] = useState('الشاهين للفيزياء');
+
+  useEffect(() => {
+    getSettings().then((s) => {
+      if (s?.center_name) setCenterName(s.center_name);
+    });
+  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -55,7 +63,7 @@ export default function AppShell({ children }) {
         <button onClick={() => setOpen(true)} className="text-slate-300"><Menu size={22} /></button>
         <div className="flex items-center gap-2">
           <LogoMark width={48} height={24} />
-          <span className="font-display font-bold text-slate-100">الشاهين للفيزياء</span>
+          <span className="font-display font-bold text-slate-100">{centerName}</span>
         </div>
         <ThemeToggle compact />
       </div>
@@ -65,7 +73,7 @@ export default function AppShell({ children }) {
         <div className="flex items-center justify-between p-5 border-b border-white/[0.06]">
           <div className="flex items-center gap-2">
             <LogoMark />
-            <span className="font-display font-bold text-slate-100">الشاهين للفيزياء</span>
+            <span className="font-display font-bold text-slate-100">{centerName}</span>
           </div>
           <button onClick={() => setOpen(false)} className="lg:hidden text-slate-400"><X size={20} /></button>
         </div>
@@ -96,7 +104,7 @@ export default function AppShell({ children }) {
       {open && <div onClick={() => setOpen(false)} className="lg:hidden fixed inset-0 bg-black/60 z-40" />}
 
       <main className="flex-1 min-w-0 pt-14 lg:pt-0">
-        <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">{children}</div>
+ <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">{children}</div>
       </main>
 
       <QuranPlayer />
