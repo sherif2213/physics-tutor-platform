@@ -43,7 +43,7 @@ export default function AppShell({ children }) {
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-teal-500 flex items-center justify-center">
               <Atom className="text-navy-950" size={18} />
             </div>
-            <span className="font-display font-bold text-slate-100">مركز الفيزياء</span>
+            <span className="font-display font-bold text-slate-100">الشاهين للفيزياء</span>
           </div>
           <button onClick={() => setOpen(false)} className="lg:hidden text-slate-400"><X size={20} /></button>
         </div>
