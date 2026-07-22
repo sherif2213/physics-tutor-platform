@@ -2,7 +2,18 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
-import { ArrowRight, Package, Layers, Lock, Unlock, Video as VideoIcon, Wallet, X } from 'lucide-react';
+import { ArrowRight, Package, Lock, Unlock, Video as VideoIcon, Wallet, X, CheckCircle2, Play } from 'lucide-react';
+
+function getYouTubeEmbedUrl(url) {
+  if (!url) return null;
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([a-zA-Z0-9_-]{11})/);
+  if (match) return `https://www.youtube.com/embed/${match[1]}?autoplay=1`;
+  if (url.includes('vimeo.com')) {
+    const id = url.split('/').pop();
+    return `https://player.vimeo.com/video/${id}?autoplay=1`;
+  }
+  return url;
+}
 
 export default function StudentVideosPage() {
   const router = useRouter();
@@ -12,8 +23,10 @@ export default function StudentVideosPage() {
   const [videosByChapter, setVideosByChapter] = useState({});
   const [purchasedUnits, setPurchasedUnits] = useState(new Set());
   const [purchasedChapters, setPurchasedChapters] = useState(new Set());
+  const [progressMap, setProgressMap] = useState({});
   const [openChapter, setOpenChapter] = useState(null);
   const [confirmBuy, setConfirmBuy] = useState(null);
+  const [playingVideo, setPlayingVideo] = useState(null);
   const [buying, setBuying] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -24,13 +37,12 @@ export default function StudentVideosPage() {
     if (!studentRow) { router.replace('/complete-profile'); return; }
     setStudent(studentRow);
 
-    const { data: unitRows } = await supabase.from('units').select('*').eq('grade_track', studentRow.grade === 'الصف الثالث الثانوي' ? 'ثالثة ثانوي' : 'تانية ثانوي').order('position');
+    const track = studentRow.grade === 'الصف الثالث الثانوي' ? 'ثالثة ثانوي' : 'تانية ثانوي';
+
+    const { data: unitRows } = await supabase.from('units').select('*').eq('grade_track', track).order('position');
     setUnits(unitRows || []);
 
-    const { data: chapterRows } = await supabase.from('chapters')
-      .select('*')
-      .eq('grade_track', studentRow.grade === 'الصف الثالث الثانوي' ? 'ثالثة ثانوي' : 'تانية ثانوي')
-      .order('position');
+    const { data: chapterRows } = await supabase.from('chapters').select('*').eq('grade_track', track).order('position');
     setChapters(chapterRows || []);
 
     const { data: videoRows } = await supabase.from('videos').select('*').order('position');
@@ -46,6 +58,11 @@ export default function StudentVideosPage() {
     const { data: purchases } = await supabase.from('purchases').select('*').eq('student_id', studentRow.id);
     setPurchasedUnits(new Set((purchases || []).filter((p) => p.unit_id).map((p) => p.unit_id)));
     setPurchasedChapters(new Set((purchases || []).filter((p) => p.chapter_id).map((p) => p.chapter_id)));
+
+    const { data: progress } = await supabase.from('video_progress').select('*').eq('student_id', studentRow.id);
+    const pMap = {};
+    (progress || []).forEach((p) => { pMap[p.video_id] = p; });
+    setProgressMap(pMap);
 
     setLoading(false);
   };
@@ -81,6 +98,15 @@ export default function StudentVideosPage() {
     setBuying(false);
     setConfirmBuy(null);
     load();
+  };
+
+  const markWatched = async (videoId) => {
+    if (!student) return;
+    const { error } = await supabase.from('video_progress').upsert({
+      student_id: student.id, video_id: videoId, completed: true, last_watched_at: new Date().toISOString(),
+    }, { onConflict: 'student_id,video_id' });
+    if (error) { alert(`خطأ: ${error.message}`); return; }
+    setProgressMap((prev) => ({ ...prev, [videoId]: { completed: true } }));
   };
 
   if (loading || !student) {
@@ -132,9 +158,11 @@ export default function StudentVideosPage() {
                     <ChapterRow key={ch.id} ch={ch}
                       unlocked={unlocked || isChapterUnlocked(ch)}
                       videos={videosByChapter[ch.id] || []}
+                      progressMap={progressMap}
                       open={openChapter === ch.id}
                       onToggle={() => setOpenChapter(openChapter === ch.id ? null : ch.id)}
                       onBuy={() => setConfirmBuy({ type: 'chapter', id: ch.id, title: ch.title, price: ch.price })}
+                      onPlay={(v) => setPlayingVideo(v)}
                     />
                   ))}
                 </div>
@@ -146,9 +174,11 @@ export default function StudentVideosPage() {
             <ChapterRow key={ch.id} ch={ch}
               unlocked={isChapterUnlocked(ch)}
               videos={videosByChapter[ch.id] || []}
+              progressMap={progressMap}
               open={openChapter === ch.id}
               onToggle={() => setOpenChapter(openChapter === ch.id ? null : ch.id)}
               onBuy={() => setConfirmBuy({ type: 'chapter', id: ch.id, title: ch.title, price: ch.price })}
+              onPlay={(v) => setPlayingVideo(v)}
             />
           ))}
         </div>
@@ -169,11 +199,41 @@ export default function StudentVideosPage() {
           </div>
         </div>
       )}
+
+      {playingVideo && (
+        <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+          <div className="w-full max-w-2xl">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-slate-100 font-bold">{playingVideo.title}</h2>
+              <button onClick={() => setPlayingVideo(null)} className="text-slate-400"><X size={24} /></button>
+            </div>
+            <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black">
+              <iframe
+                src={getYouTubeEmbedUrl(playingVideo.video_url)}
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+            {playingVideo.description && (
+              <p className="text-slate-400 text-sm mt-3">{playingVideo.description}</p>
+            )}
+            <button
+              onClick={() => markWatched(playingVideo.id)}
+              className={`w-full mt-3 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all
+                ${progressMap[playingVideo.id]?.completed ? 'bg-teal-500/15 text-teal-300' : 'btn-primary'}`}
+            >
+              <CheckCircle2 size={18} />
+              {progressMap[playingVideo.id]?.completed ? 'تمت المشاهدة ✓' : 'تسجيل كمشاهد'}
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
 
-function ChapterRow({ ch, unlocked, videos, open, onToggle, onBuy }) {
+function ChapterRow({ ch, unlocked, videos, progressMap, open, onToggle, onBuy, onPlay }) {
   return (
     <div className="glass-card overflow-hidden">
       <div className="p-4">
@@ -193,12 +253,19 @@ function ChapterRow({ ch, unlocked, videos, open, onToggle, onBuy }) {
       {unlocked && open && (
         <div className="border-t border-white/[0.06] p-4 space-y-2">
           {videos.length === 0 && <p className="text-slate-500 text-sm">لا يوجد فيديوهات بعد</p>}
-          {videos.map((v) => (
-            <div key={v.id} className="flex items-center gap-2 bg-white/[0.03] rounded-xl p-3">
-              <VideoIcon size={16} className="text-teal-400 shrink-0" />
-              <p className="text-slate-200 text-sm flex-1 truncate">{v.title}</p>
-            </div>
-          ))}
+          {videos.map((v) => {
+            const completed = progressMap[v.id]?.completed;
+            return (
+              <button key={v.id} onClick={() => onPlay(v)}
+                className="w-full flex items-center gap-2 bg-white/[0.03] hover:bg-white/[0.06] rounded-xl p-3 transition-all">
+                <div className="w-8 h-8 rounded-full bg-teal-500/15 flex items-center justify-center shrink-0">
+                  <Play size={13} className="text-teal-400" />
+                </div>
+                <p className="text-slate-200 text-sm flex-1 truncate text-right">{v.title}</p>
+                {completed && <CheckCircle2 size={16} className="text-teal-400 shrink-0" />}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
