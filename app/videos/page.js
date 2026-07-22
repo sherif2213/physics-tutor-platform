@@ -2,15 +2,19 @@
 import { useEffect, useState } from 'react';
 import AppShell from '@/components/AppShell';
 import { supabase } from '@/lib/supabaseClient';
-import { Plus, Trash2, Pencil, ChevronUp, ChevronDown, Video as VideoIcon, X } from 'lucide-react';
+import { Plus, Trash2, Pencil, ChevronUp, ChevronDown, Video as VideoIcon, X, FolderPlus, Layers } from 'lucide-react';
 
 const GRADES = ['الصف الأول الثانوي', 'الصف الثاني الثانوي', 'الصف الثالث الثانوي'];
+const TRACKS = ['ثالثة ثانوي', 'تانية ثانوي'];
 
 export default function VideosPage() {
+  const [track, setTrack] = useState('ثالثة ثانوي');
   const [chapters, setChapters] = useState([]);
   const [videosByChapter, setVideosByChapter] = useState({});
   const [openChapter, setOpenChapter] = useState(null);
-  const [modal, setModal] = useState(null); // { chapterId, video }
+  const [modal, setModal] = useState(null);
+  const [sectionModal, setSectionModal] = useState(false);
+  const [newSectionTitle, setNewSectionTitle] = useState('');
   const [loading, setLoading] = useState(true);
 
   const loadAll = async () => {
@@ -27,6 +31,26 @@ export default function VideosPage() {
   };
 
   useEffect(() => { loadAll(); }, []);
+
+  const trackChapters = chapters.filter((c) => c.grade_track === track);
+
+  const addSection = async () => {
+    if (!newSectionTitle.trim()) return;
+    await supabase.from('chapters').insert({
+      title: newSectionTitle.trim(),
+      grade_track: track,
+      position: trackChapters.length,
+    });
+    setNewSectionTitle('');
+    setSectionModal(false);
+    loadAll();
+  };
+
+  const deleteSection = async (id) => {
+    if (!confirm('هيتم حذف القسم وكل الفيديوهات اللي جواه. متأكد؟')) return;
+    await supabase.from('chapters').delete().eq('id', id);
+    loadAll();
+  };
 
   const saveVideo = async (form) => {
     if (form.id) {
@@ -67,25 +91,43 @@ export default function VideosPage() {
     <AppShell>
       <header className="mb-6">
         <h1 className="font-display text-2xl font-extrabold text-slate-100">الفيديوهات</h1>
-        <p className="text-slate-400 text-sm mt-1">أضف دروسك وقسّمها على فصول، وحدد الصفوف اللي تقدر تشوفها</p>
+        <p className="text-slate-400 text-sm mt-1">نظّم دروسك في أقسام، وحدد الصفوف اللي تقدر تشوف كل فيديو</p>
       </header>
+
+      <div className="flex gap-2 mb-6 glass-card p-1.5 w-fit">
+        {TRACKS.map((t) => (
+          <button key={t} onClick={() => setTrack(t)}
+            className={`px-5 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2
+              ${track === t ? 'bg-gradient-to-l from-amber-500 to-amber-400 text-navy-950 shadow-glow' : 'text-slate-400 hover:text-slate-200'}`}>
+            <Layers size={15} />
+            {t}
+          </button>
+        ))}
+      </div>
 
       {loading ? (
         <p className="text-slate-500">جارٍ التحميل...</p>
       ) : (
         <div className="space-y-3">
-          {chapters.map((ch) => {
+          {trackChapters.map((ch) => {
             const vids = videosByChapter[ch.id] || [];
             const open = openChapter === ch.id;
             return (
               <div key={ch.id} className="glass-card overflow-hidden">
-                <button onClick={() => setOpenChapter(open ? null : ch.id)}
-                  className="w-full flex items-center justify-between p-4">
-                  <span className="font-bold text-slate-100">{ch.title}</span>
-                  <span className="text-slate-500 text-sm">{vids.length} فيديو</span>
-                </button>
+                <div className="w-full flex items-center justify-between p-4">
+                  <button onClick={() => setOpenChapter(open ? null : ch.id)} className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400/20 to-teal-500/20 flex items-center justify-center shrink-0">
+                      <Layers className="text-amber-400" size={17} />
+                    </div>
+                    <span className="font-bold text-slate-100 truncate">{ch.title}</span>
+                  </button>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <span className="text-slate-500 text-xs ml-2">{vids.length} فيديو</span>
+                    <button onClick={() => deleteSection(ch.id)} className="p-2 text-slate-500 hover:text-red-400"><Trash2 size={15} /></button>
+                  </div>
+                </div>
                 {open && (
-                  <div className="border-t border-white/[0.06] p-4 space-y-2">
+                  <div className="border-t border-amber-400/10 p-4 space-y-2">
                     {vids.map((v, i) => (
                       <div key={v.id} className="flex items-center gap-2 bg-white/[0.03] rounded-xl p-3">
                         <div className="flex flex-col">
@@ -110,6 +152,26 @@ export default function VideosPage() {
               </div>
             );
           })}
+
+          <button onClick={() => setSectionModal(true)}
+            className="w-full glass-card p-5 flex items-center justify-center gap-2 text-amber-400 font-bold border-dashed border-2 border-amber-400/20 hover:border-amber-400/50">
+            <FolderPlus size={20} />
+            إضافة قسم جديد
+          </button>
+        </div>
+      )}
+
+      {sectionModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="glass-card p-6 w-full max-w-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="font-bold text-slate-100">قسم جديد في {track}</h2>
+              <button onClick={() => setSectionModal(false)} className="text-slate-400"><X size={20} /></button>
+            </div>
+            <input autoFocus value={newSectionTitle} onChange={(e) => setNewSectionTitle(e.target.value)}
+              className="input-field" placeholder="مثال: مراجعة نهائية، امتحانات، ..." />
+            <button onClick={addSection} className="btn-primary w-full">إضافة القسم</button>
+          </div>
         </div>
       )}
 
