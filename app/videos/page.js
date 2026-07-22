@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import AppShell from '@/components/AppShell';
 import { supabase } from '@/lib/supabaseClient';
-import { Plus, Trash2, Pencil, ChevronUp, ChevronDown, Video as VideoIcon, X, FolderPlus, Layers, Package } from 'lucide-react';
+import { Plus, Trash2, Pencil, ChevronUp, ChevronDown, Video as VideoIcon, X, FolderPlus, Layers, Package, Check } from 'lucide-react';
 
 const GRADES = ['الصف الأول الثانوي', 'الصف الثاني الثانوي', 'الصف الثالث الثانوي'];
 const TRACKS = ['ثالثة ثانوي', 'تانية ثانوي'];
@@ -17,6 +17,7 @@ export default function VideosPage() {
   const [sectionModal, setSectionModal] = useState(false);
   const [newSectionTitle, setNewSectionTitle] = useState('');
   const [loading, setLoading] = useState(true);
+  const [savedFlash, setSavedFlash] = useState(null);
 
   const loadAll = async () => {
     const { data: unitRows } = await supabase.from('units').select('*').order('position');
@@ -40,22 +41,29 @@ export default function VideosPage() {
   const looseChapters = trackChapters.filter((c) => !c.unit_id);
 
   const updateUnitPrice = async (id, price) => {
-    await supabase.from('units').update({ price: Number(price) || 0 }).eq('id', id);
+    const { error } = await supabase.from('units').update({ price: Number(price) || 0 }).eq('id', id);
+    if (error) { alert(`فشل حفظ سعر الباب: ${error.message}`); return; }
+    setSavedFlash(id);
+    setTimeout(() => setSavedFlash(null), 1500);
     loadAll();
   };
 
   const updateChapterPrice = async (id, price) => {
-    await supabase.from('chapters').update({ price: Number(price) || 0 }).eq('id', id);
+    const { error } = await supabase.from('chapters').update({ price: Number(price) || 0 }).eq('id', id);
+    if (error) { alert(`فشل حفظ سعر الفصل: ${error.message}`); return; }
+    setSavedFlash(id);
+    setTimeout(() => setSavedFlash(null), 1500);
     loadAll();
   };
 
   const addSection = async () => {
     if (!newSectionTitle.trim()) return;
-    await supabase.from('chapters').insert({
+    const { error } = await supabase.from('chapters').insert({
       title: newSectionTitle.trim(),
       grade_track: track,
       position: trackChapters.length,
     });
+    if (error) { alert(`فشل إضافة القسم: ${error.message}`); return; }
     setNewSectionTitle('');
     setSectionModal(false);
     loadAll();
@@ -63,33 +71,37 @@ export default function VideosPage() {
 
   const deleteSection = async (id) => {
     if (!confirm('هيتم حذف القسم وكل الفيديوهات اللي جواه. متأكد؟')) return;
-    await supabase.from('chapters').delete().eq('id', id);
+    const { error } = await supabase.from('chapters').delete().eq('id', id);
+    if (error) { alert(`فشل الحذف: ${error.message}`); return; }
     loadAll();
   };
 
   const saveVideo = async (form) => {
+    let error;
     if (form.id) {
-      await supabase.from('videos').update({
+      ({ error } = await supabase.from('videos').update({
         title: form.title, description: form.description, video_url: form.video_url,
         thumbnail_url: form.thumbnail_url, target_grades: form.target_grades,
         is_downloadable: form.is_downloadable,
-      }).eq('id', form.id);
+      }).eq('id', form.id));
     } else {
       const list = videosByChapter[form.chapter_id] || [];
-      await supabase.from('videos').insert({
+      ({ error } = await supabase.from('videos').insert({
         chapter_id: form.chapter_id, title: form.title, description: form.description,
         video_url: form.video_url, thumbnail_url: form.thumbnail_url,
         target_grades: form.target_grades, is_downloadable: form.is_downloadable,
         position: list.length,
-      });
+      }));
     }
+    if (error) { alert(`فشل حفظ الفيديو: ${error.message}`); return; }
     setModal(null);
     loadAll();
   };
 
   const deleteVideo = async (id) => {
     if (!confirm('متأكد إنك عايز تحذف الفيديو ده؟')) return;
-    await supabase.from('videos').delete().eq('id', id);
+    const { error } = await supabase.from('videos').delete().eq('id', id);
+    if (error) { alert(`فشل الحذف: ${error.message}`); return; }
     loadAll();
   };
 
@@ -123,6 +135,7 @@ export default function VideosPage() {
                 className="w-16 bg-white/[0.05] border border-white/[0.1] rounded-lg px-2 py-1 text-xs text-slate-200"
               />
               <span className="text-slate-500 text-xs">ج.م</span>
+              {savedFlash === ch.id && <Check size={14} className="text-teal-400" />}
             </div>
             <div className="flex items-center gap-2">
               <span className="text-slate-500 text-xs">{vids.length} فيديو</span>
@@ -195,6 +208,7 @@ export default function VideosPage() {
                     className="w-20 bg-white/[0.06] border border-amber-400/20 rounded-lg px-2 py-1 text-sm text-amber-300 font-bold"
                   />
                   <span className="text-slate-400 text-xs">ج.م</span>
+                  {savedFlash === unit.id && <Check size={14} className="text-teal-400" />}
                 </div>
                 <div className="space-y-2">
                   {unitChapters.map((ch) => <ChapterBlock key={ch.id} ch={ch} />)}
@@ -301,6 +315,6 @@ function VideoModal({ chapterId, video, onClose, onSave }) {
         </label>
         <button type="submit" className="btn-primary w-full">حفظ الفيديو</button>
       </form>
-    </div>
+</div>
   );
 }
