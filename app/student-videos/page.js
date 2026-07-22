@@ -27,6 +27,8 @@ export default function StudentVideosPage() {
   const [openChapter, setOpenChapter] = useState(null);
   const [confirmBuy, setConfirmBuy] = useState(null);
   const [playingVideo, setPlayingVideo] = useState(null);
+  const [signedUrl, setSignedUrl] = useState(null);
+  const [videoLoading, setVideoLoading] = useState(false);
   const [buying, setBuying] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -100,6 +102,18 @@ export default function StudentVideosPage() {
     load();
   };
 
+  const openVideo = async (video) => {
+    setPlayingVideo(video);
+    setSignedUrl(null);
+    if (video.storage_path) {
+      setVideoLoading(true);
+      const { data, error } = await supabase.storage.from('course-videos').createSignedUrl(video.storage_path, 3600);
+      setVideoLoading(false);
+      if (error) { alert(`تعذّر تحميل الفيديو: ${error.message}`); setPlayingVideo(null); return; }
+      setSignedUrl(data.signedUrl);
+    }
+  };
+
   const markWatched = async (videoId) => {
     if (!student) return;
     const { error } = await supabase.from('video_progress').upsert({
@@ -162,7 +176,7 @@ export default function StudentVideosPage() {
                       open={openChapter === ch.id}
                       onToggle={() => setOpenChapter(openChapter === ch.id ? null : ch.id)}
                       onBuy={() => setConfirmBuy({ type: 'chapter', id: ch.id, title: ch.title, price: ch.price })}
-                      onPlay={(v) => setPlayingVideo(v)}
+                      onPlay={openVideo}
                     />
                   ))}
                 </div>
@@ -178,7 +192,7 @@ export default function StudentVideosPage() {
               open={openChapter === ch.id}
               onToggle={() => setOpenChapter(openChapter === ch.id ? null : ch.id)}
               onBuy={() => setConfirmBuy({ type: 'chapter', id: ch.id, title: ch.title, price: ch.price })}
-              onPlay={(v) => setPlayingVideo(v)}
+              onPlay={openVideo}
             />
           ))}
         </div>
@@ -205,15 +219,27 @@ export default function StudentVideosPage() {
           <div className="w-full max-w-2xl">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-slate-100 font-bold">{playingVideo.title}</h2>
-              <button onClick={() => setPlayingVideo(null)} className="text-slate-400"><X size={24} /></button>
+              <button onClick={() => { setPlayingVideo(null); setSignedUrl(null); }} className="text-slate-400"><X size={24} /></button>
             </div>
-            <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black">
-              <iframe
-                src={getYouTubeEmbedUrl(playingVideo.video_url)}
-                className="w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
+            <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black flex items-center justify-center">
+              {playingVideo.storage_path ? (
+                videoLoading ? (
+                  <p className="text-slate-400 text-sm">جارٍ تجهيز الفيديو بأمان...</p>
+                ) : signedUrl ? (
+                  <video
+                    src={signedUrl} controls controlsList="nodownload noremoteplayback" disablePictureInPicture={false}
+                    onContextMenu={(e) => e.preventDefault()}
+                    autoPlay className="w-full h-full"
+                  />
+                ) : null
+              ) : (
+                <iframe
+                  src={getYouTubeEmbedUrl(playingVideo.video_url)}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              )}
             </div>
             {playingVideo.description && (
               <p className="text-slate-400 text-sm mt-3">{playingVideo.description}</p>
