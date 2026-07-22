@@ -107,15 +107,16 @@ export default function VideosPage() {
     const open = openChapter === ch.id;
     return (
       <div className="glass-card overflow-hidden">
-        <div className="w-full flex items-center justify-between p-4 gap-2 flex-wrap">
-          <button onClick={() => setOpenChapter(open ? null : ch.id)} className="flex items-center gap-3 flex-1 min-w-0">
+        <div className="p-4">
+          <button onClick={() => setOpenChapter(open ? null : ch.id)} className="flex items-center gap-3 w-full mb-3">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400/20 to-teal-500/20 flex items-center justify-center shrink-0">
               <Layers className="text-amber-400" size={15} />
             </div>
-            <span className="font-bold text-slate-100 truncate text-sm">{ch.title}</span>
+            <span className="font-bold text-slate-100 text-sm text-right flex-1">{ch.title}</span>
           </button>
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="flex items-center gap-1">
+          <div className="flex items-center justify-between flex-wrap gap-2 pr-12">
+            <div className="flex items-center gap-1.5">
+              <span className="text-slate-400 text-xs">السعر:</span>
               <input
                 type="number" defaultValue={ch.price}
                 onBlur={(e) => updateChapterPrice(ch.id, e.target.value)}
@@ -123,8 +124,10 @@ export default function VideosPage() {
               />
               <span className="text-slate-500 text-xs">ج.م</span>
             </div>
-            <span className="text-slate-500 text-xs">{vids.length} فيديو</span>
-            <button onClick={() => deleteSection(ch.id)} className="p-1.5 text-slate-500 hover:text-red-400"><Trash2 size={14} /></button>
+            <div className="flex items-center gap-2">
+              <span className="text-slate-500 text-xs">{vids.length} فيديو</span>
+              <button onClick={() => deleteSection(ch.id)} className="p-1.5 text-slate-500 hover:text-red-400"><Trash2 size={14} /></button>
+            </div>
           </div>
         </div>
         {open && (
@@ -180,20 +183,18 @@ export default function VideosPage() {
             const unitChapters = trackChapters.filter((c) => c.unit_id === unit.id);
             return (
               <div key={unit.id} className="rounded-2xl border border-amber-400/15 bg-amber-400/[0.03] p-4">
-                <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                  <div className="flex items-center gap-2">
-                    <Package className="text-amber-400" size={18} />
-                    <span className="font-extrabold text-slate-100">{unit.title}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-slate-400 text-xs">سعر الباب كامل:</span>
-                    <input
-                      type="number" defaultValue={unit.price}
-                      onBlur={(e) => updateUnitPrice(unit.id, e.target.value)}
-                      className="w-20 bg-white/[0.06] border border-amber-400/20 rounded-lg px-2 py-1 text-sm text-amber-300 font-bold"
-                    />
-                    <span className="text-slate-400 text-xs">ج.م</span>
-                  </div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Package className="text-amber-400 shrink-0" size={18} />
+                  <span className="font-extrabold text-slate-100 flex-1">{unit.title}</span>
+                </div>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-slate-400 text-xs">سعر الباب كامل:</span>
+                  <input
+                    type="number" defaultValue={unit.price}
+                    onBlur={(e) => updateUnitPrice(unit.id, e.target.value)}
+                    className="w-20 bg-white/[0.06] border border-amber-400/20 rounded-lg px-2 py-1 text-sm text-amber-300 font-bold"
+                  />
+                  <span className="text-slate-400 text-xs">ج.م</span>
                 </div>
                 <div className="space-y-2">
                   {unitChapters.map((ch) => <ChapterBlock key={ch.id} ch={ch} />)}
