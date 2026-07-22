@@ -112,9 +112,9 @@ export default function StudentDashboard() {
               <Wallet className={student.subscription_active ? 'text-teal-400' : 'text-red-400'} size={20} />
             </div>
             <div className="text-right">
-              <p className="text-slate-500 text-xs">حالة الاشتراك</p>
+              <p className="text-slate-500 text-xs">رصيدك الحالي</p>
               <p className={`font-bold ${student.subscription_active ? 'text-teal-300' : 'text-red-400'}`}>
-                {student.subscription_active ? 'مفعّل' : 'اضغط هنا للاشتراك'}
+                {student.wallet_balance || 0} ج.م — اضغط للشحن
               </p>
             </div>
           </div>

@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import AppShell from '@/components/AppShell';
 import { supabase } from '@/lib/supabaseClient';
-import { CheckCircle2, XCircle, Clock, ExternalLink } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, ExternalLink, Wallet } from 'lucide-react';
 
 export default function PaymentRequestsPage() {
   const [requests, setRequests] = useState([]);
@@ -11,7 +11,7 @@ export default function PaymentRequestsPage() {
   const load = async () => {
     const { data } = await supabase
       .from('payment_requests')
-      .select('*, students(full_name, phone)')
+      .select('*, students(id, full_name, phone, wallet_balance)')
       .order('created_at', { ascending: false });
     setRequests(data || []);
     setLoading(false);
@@ -20,17 +20,20 @@ export default function PaymentRequestsPage() {
   useEffect(() => { load(); }, []);
 
   const approve = async (req) => {
-    const days = prompt('كام يوم هتفعّل الاشتراك؟', '30');
-    if (!days) return;
-    const expiresAt = new Date(Date.now() + Number(days) * 86400000).toISOString();
+    const defaultAmount = req.amount || '';
+    const amountStr = prompt('اكتب قيمة المبلغ اللي هيتضاف لرصيد الطالب (بالجنيه):', defaultAmount);
+    if (!amountStr) return;
+    const amount = Number(amountStr);
+    if (!amount || amount <= 0) { alert('قيمة غير صحيحة'); return; }
+
+    const currentBalance = Number(req.students?.wallet_balance || 0);
 
     await supabase.from('students').update({
-      subscription_active: true,
-      subscription_expires_at: expiresAt,
+      wallet_balance: currentBalance + amount,
     }).eq('id', req.student_id);
 
     await supabase.from('payment_requests').update({
-      status: 'approved', duration_days: Number(days), reviewed_at: new Date().toISOString(),
+      status: 'approved', amount, reviewed_at: new Date().toISOString(),
     }).eq('id', req.id);
 
     load();
@@ -51,7 +54,7 @@ export default function PaymentRequestsPage() {
     <AppShell>
       <header className="mb-6">
         <h1 className="font-display text-2xl font-extrabold text-slate-100">طلبات الدفع</h1>
-        <p className="text-slate-400 text-sm mt-1">راجع إثباتات الدفع وفعّل اشتراكات الطلاب</p>
+        <p className="text-slate-400 text-sm mt-1">راجع إثباتات الدفع وأضف المبلغ لرصيد الطالب</p>
       </header>
 
       {loading ? (
@@ -66,7 +69,12 @@ export default function PaymentRequestsPage() {
                 <div key={r.id} className="glass-card p-4 flex flex-wrap items-center gap-3">
                   <div className="flex-1 min-w-[140px]">
                     <p className="font-bold text-slate-100">{r.students?.full_name}</p>
-                    <p className="text-slate-500 text-xs">حوّل من: {r.sender_phone} {r.amount ? `· ${r.amount} ج.م` : ''}</p>
+                    <p className="text-slate-500 text-xs">
+                      حوّل من: {r.sender_phone} {r.amount ? `· ${r.amount} ج.م` : ''}
+                    </p>
+                    <p className="text-slate-500 text-xs mt-0.5 flex items-center gap-1">
+                      <Wallet size={12} /> رصيده الحالي: {Number(r.students?.wallet_balance || 0)} ج.م
+                    </p>
                     {r.notes && <p className="text-slate-500 text-xs mt-1">{r.notes}</p>}
                   </div>
                   {r.screenshot_url && (
@@ -91,7 +99,7 @@ export default function PaymentRequestsPage() {
                   <div key={r.id} className="glass-card p-3 flex items-center justify-between text-sm">
                     <span className="text-slate-300">{r.students?.full_name}</span>
                     {r.status === 'approved'
-                      ? <span className="text-teal-300 text-xs font-bold">مقبول ({r.duration_days} يوم)</span>
+                      ? <span className="text-teal-300 text-xs font-bold">تم إضافة {r.amount} ج.م</span>
                       : <span className="text-red-400 text-xs font-bold">مرفوض</span>}
                   </div>
                 ))}
