@@ -2,13 +2,14 @@
 import { useEffect, useState } from 'react';
 import AppShell from '@/components/AppShell';
 import { supabase } from '@/lib/supabaseClient';
-import { Plus, Trash2, Pencil, ChevronUp, ChevronDown, Video as VideoIcon, X, FolderPlus, Layers } from 'lucide-react';
+import { Plus, Trash2, Pencil, ChevronUp, ChevronDown, Video as VideoIcon, X, FolderPlus, Layers, Package } from 'lucide-react';
 
 const GRADES = ['الصف الأول الثانوي', 'الصف الثاني الثانوي', 'الصف الثالث الثانوي'];
 const TRACKS = ['ثالثة ثانوي', 'تانية ثانوي'];
 
 export default function VideosPage() {
   const [track, setTrack] = useState('ثالثة ثانوي');
+  const [units, setUnits] = useState([]);
   const [chapters, setChapters] = useState([]);
   const [videosByChapter, setVideosByChapter] = useState({});
   const [openChapter, setOpenChapter] = useState(null);
@@ -18,6 +19,8 @@ export default function VideosPage() {
   const [loading, setLoading] = useState(true);
 
   const loadAll = async () => {
+    const { data: unitRows } = await supabase.from('units').select('*').order('position');
+    setUnits(unitRows || []);
     const { data: chapterRows } = await supabase.from('chapters').select('*').order('position');
     setChapters(chapterRows || []);
     const { data: videoRows } = await supabase.from('videos').select('*').order('position');
@@ -33,6 +36,18 @@ export default function VideosPage() {
   useEffect(() => { loadAll(); }, []);
 
   const trackChapters = chapters.filter((c) => c.grade_track === track);
+  const trackUnits = units.filter((u) => u.grade_track === track);
+  const looseChapters = trackChapters.filter((c) => !c.unit_id);
+
+  const updateUnitPrice = async (id, price) => {
+    await supabase.from('units').update({ price: Number(price) || 0 }).eq('id', id);
+    loadAll();
+  };
+
+  const updateChapterPrice = async (id, price) => {
+    await supabase.from('chapters').update({ price: Number(price) || 0 }).eq('id', id);
+    loadAll();
+  };
 
   const addSection = async () => {
     if (!newSectionTitle.trim()) return;
@@ -87,11 +102,63 @@ export default function VideosPage() {
     loadAll();
   };
 
+  const ChapterBlock = ({ ch }) => {
+    const vids = videosByChapter[ch.id] || [];
+    const open = openChapter === ch.id;
+    return (
+      <div className="glass-card overflow-hidden">
+        <div className="w-full flex items-center justify-between p-4 gap-2 flex-wrap">
+          <button onClick={() => setOpenChapter(open ? null : ch.id)} className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400/20 to-teal-500/20 flex items-center justify-center shrink-0">
+              <Layers className="text-amber-400" size={15} />
+            </div>
+            <span className="font-bold text-slate-100 truncate text-sm">{ch.title}</span>
+          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-1">
+              <input
+                type="number" defaultValue={ch.price}
+                onBlur={(e) => updateChapterPrice(ch.id, e.target.value)}
+                className="w-16 bg-white/[0.05] border border-white/[0.1] rounded-lg px-2 py-1 text-xs text-slate-200"
+              />
+              <span className="text-slate-500 text-xs">ج.م</span>
+            </div>
+            <span className="text-slate-500 text-xs">{vids.length} فيديو</span>
+            <button onClick={() => deleteSection(ch.id)} className="p-1.5 text-slate-500 hover:text-red-400"><Trash2 size={14} /></button>
+          </div>
+        </div>
+        {open && (
+          <div className="border-t border-amber-400/10 p-4 space-y-2">
+            {vids.map((v, i) => (
+              <div key={v.id} className="flex items-center gap-2 bg-white/[0.03] rounded-xl p-3">
+                <div className="flex flex-col">
+                  <button onClick={() => moveVideo(ch.id, i, -1)} className="text-slate-500 hover:text-slate-300"><ChevronUp size={14} /></button>
+                  <button onClick={() => moveVideo(ch.id, i, 1)} className="text-slate-500 hover:text-slate-300"><ChevronDown size={14} /></button>
+                </div>
+                <VideoIcon size={18} className="text-teal-400 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-slate-200 text-sm font-medium truncate">{v.title}</p>
+                  <p className="text-slate-500 text-xs truncate">{(v.target_grades || []).join('، ') || 'كل الصفوف'}</p>
+                </div>
+                <button onClick={() => setModal({ chapterId: ch.id, video: v })} className="p-2 text-slate-400 hover:text-amber-400"><Pencil size={16} /></button>
+                <button onClick={() => deleteVideo(v.id)} className="p-2 text-slate-400 hover:text-red-400"><Trash2 size={16} /></button>
+              </div>
+            ))}
+            <button onClick={() => setModal({ chapterId: ch.id, video: null })}
+              className="btn-secondary w-full flex items-center justify-center gap-2 text-sm">
+              <Plus size={16} /> إضافة فيديو
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <AppShell>
       <header className="mb-6">
         <h1 className="font-display text-2xl font-extrabold text-slate-100">الفيديوهات</h1>
-        <p className="text-slate-400 text-sm mt-1">نظّم دروسك في أقسام، وحدد الصفوف اللي تقدر تشوف كل فيديو</p>
+        <p className="text-slate-400 text-sm mt-1">نظّم دروسك في أبواب وفصول، وحدد سعر كل باب وكل فصل</p>
       </header>
 
       <div className="flex gap-2 mb-6 glass-card p-1.5 w-fit">
@@ -108,50 +175,34 @@ export default function VideosPage() {
       {loading ? (
         <p className="text-slate-500">جارٍ التحميل...</p>
       ) : (
-        <div className="space-y-3">
-          {trackChapters.map((ch) => {
-            const vids = videosByChapter[ch.id] || [];
-            const open = openChapter === ch.id;
+        <div className="space-y-5">
+          {trackUnits.map((unit) => {
+            const unitChapters = trackChapters.filter((c) => c.unit_id === unit.id);
             return (
-              <div key={ch.id} className="glass-card overflow-hidden">
-                <div className="w-full flex items-center justify-between p-4">
-                  <button onClick={() => setOpenChapter(open ? null : ch.id)} className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400/20 to-teal-500/20 flex items-center justify-center shrink-0">
-                      <Layers className="text-amber-400" size={17} />
-                    </div>
-                    <span className="font-bold text-slate-100 truncate">{ch.title}</span>
-                  </button>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <span className="text-slate-500 text-xs ml-2">{vids.length} فيديو</span>
-                    <button onClick={() => deleteSection(ch.id)} className="p-2 text-slate-500 hover:text-red-400"><Trash2 size={15} /></button>
+              <div key={unit.id} className="rounded-2xl border border-amber-400/15 bg-amber-400/[0.03] p-4">
+                <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <Package className="text-amber-400" size={18} />
+                    <span className="font-extrabold text-slate-100">{unit.title}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-slate-400 text-xs">سعر الباب كامل:</span>
+                    <input
+                      type="number" defaultValue={unit.price}
+                      onBlur={(e) => updateUnitPrice(unit.id, e.target.value)}
+                      className="w-20 bg-white/[0.06] border border-amber-400/20 rounded-lg px-2 py-1 text-sm text-amber-300 font-bold"
+                    />
+                    <span className="text-slate-400 text-xs">ج.م</span>
                   </div>
                 </div>
-                {open && (
-                  <div className="border-t border-amber-400/10 p-4 space-y-2">
-                    {vids.map((v, i) => (
-                      <div key={v.id} className="flex items-center gap-2 bg-white/[0.03] rounded-xl p-3">
-                        <div className="flex flex-col">
-                          <button onClick={() => moveVideo(ch.id, i, -1)} className="text-slate-500 hover:text-slate-300"><ChevronUp size={14} /></button>
-                          <button onClick={() => moveVideo(ch.id, i, 1)} className="text-slate-500 hover:text-slate-300"><ChevronDown size={14} /></button>
-                        </div>
-                        <VideoIcon size={18} className="text-teal-400 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-slate-200 text-sm font-medium truncate">{v.title}</p>
-                          <p className="text-slate-500 text-xs truncate">{(v.target_grades || []).join('، ') || 'كل الصفوف'}</p>
-                        </div>
-                        <button onClick={() => setModal({ chapterId: ch.id, video: v })} className="p-2 text-slate-400 hover:text-amber-400"><Pencil size={16} /></button>
-                        <button onClick={() => deleteVideo(v.id)} className="p-2 text-slate-400 hover:text-red-400"><Trash2 size={16} /></button>
-                      </div>
-                    ))}
-                    <button onClick={() => setModal({ chapterId: ch.id, video: null })}
-                      className="btn-secondary w-full flex items-center justify-center gap-2 text-sm">
-                      <Plus size={16} /> إضافة فيديو
-                    </button>
-                  </div>
-                )}
+                <div className="space-y-2">
+                  {unitChapters.map((ch) => <ChapterBlock key={ch.id} ch={ch} />)}
+                </div>
               </div>
             );
           })}
+
+          {looseChapters.map((ch) => <ChapterBlock key={ch.id} ch={ch} />)}
 
           <button onClick={() => setSectionModal(true)}
             className="w-full glass-card p-5 flex items-center justify-center gap-2 text-amber-400 font-bold border-dashed border-2 border-amber-400/20 hover:border-amber-400/50">
