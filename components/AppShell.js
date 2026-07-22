@@ -7,6 +7,9 @@ import {
   FileBarChart, Settings, LogOut, Menu, X, Video, Wallet as WalletIcon,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
+import QuranPlayer from './QuranPlayer';
+import AzkarPanel from './AzkarPanel';
+import ThemeToggle from './ThemeToggle';
 
 const NAV = [
   { href: '/dashboard', label: 'الرئيسية', icon: LayoutDashboard },
@@ -35,7 +38,7 @@ export default function AppShell({ children }) {
       <div className="lg:hidden fixed top-0 inset-x-0 h-14 bg-navy-900/90 backdrop-blur-xl border-b border-amber-400/10 z-40 flex items-center justify-between px-4">
         <button onClick={() => setOpen(true)} className="text-slate-300"><Menu size={22} /></button>
         <span className="font-display font-bold text-slate-100">منصة ZSH</span>
-        <div className="w-6" />
+        <ThemeToggle compact />
       </div>
 
       <aside className={`fixed lg:sticky top-0 h-screen w-64 bg-navy-900/95 backdrop-blur-xl border-l border-amber-400/10 z-50 transition-transform duration-300 flex flex-col
@@ -62,7 +65,8 @@ export default function AppShell({ children }) {
           })}
         </nav>
 
-        <div className="p-3 border-t border-amber-400/10">
+        <div className="p-3 border-t border-amber-400/10 space-y-1">
+          <ThemeToggle />
           <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/[0.08] w-full transition-all">
             <LogOut size={18} />
             تسجيل الخروج
@@ -75,6 +79,9 @@ export default function AppShell({ children }) {
       <main className="flex-1 min-w-0 pt-14 lg:pt-0">
         <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">{children}</div>
       </main>
+
+      <QuranPlayer />
+      <AzkarPanel />
     </div>
   );
 }
