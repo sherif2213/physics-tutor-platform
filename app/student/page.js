@@ -131,7 +131,7 @@ export default function StudentDashboard() {
         </button>
 
         <div className="grid sm:grid-cols-2 gap-4">
-          <div className="glass-card p-6">
+          <button onClick={() => router.push('/student-videos')} className="glass-card p-6 text-right">
             <div className="flex items-center gap-2 mb-3">
               <Video className="text-teal-400" size={18} />
               <span className="text-slate-300 font-medium text-sm">آخر الدروس المضافة</span>
@@ -151,7 +151,7 @@ export default function StudentDashboard() {
                 ))}
               </div>
             )}
-          </div>
+          </button>
           <div className="glass-card p-6">
             <div className="flex items-center gap-2 mb-3">
               <Bell className="text-amber-400" size={18} />
