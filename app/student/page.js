@@ -4,18 +4,11 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import { GraduationCap, Users2, CalendarCheck, Wallet, LogOut, Sparkles, Bell, Video } from 'lucide-react';
 
-const currentMonthKey = () => {
-  const idx = new Date().getMonth();
-  const map = { 7: 'august', 8: 'september', 9: 'october', 10: 'november', 11: 'december', 0: 'january', 1: 'february', 2: 'march', 3: 'april', 4: 'may', 5: 'june' };
-  return map[idx] || 'august';
-};
-
 export default function StudentDashboard() {
   const router = useRouter();
   const [student, setStudent] = useState(null);
   const [groupName, setGroupName] = useState('');
   const [attendanceRate, setAttendanceRate] = useState(0);
-  const [subscriptionPaid, setSubscriptionPaid] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -49,11 +42,6 @@ export default function StudentDashboard() {
         setAttendanceRate(Math.round((present / attendance.length) * 100));
       }
 
-      const month = currentMonthKey();
-      const { data: payment } = await supabase
-        .from('payments').select('paid').eq('student_id', studentRow.id).eq('month', month).maybeSingle();
-      setSubscriptionPaid(payment?.paid || false);
-
       setLoading(false);
     })();
   }, [router]);
@@ -63,7 +51,7 @@ export default function StudentDashboard() {
     router.push('/login');
   };
 
-  if (loading) {
+  if (loading || !student) {
     return (
       <main className="min-h-screen bg-navy-950 grid-overlay flex items-center justify-center">
         <p className="text-slate-400">جارٍ التحميل...</p>
@@ -118,19 +106,19 @@ export default function StudentDashboard() {
           </div>
         </div>
 
-        <div className={`glass-card p-6 mb-6 flex items-center justify-between ${subscriptionPaid ? '' : 'border-red-400/20'}`}>
+        <button onClick={() => router.push('/subscription')} className={`glass-card p-6 mb-6 w-full flex items-center justify-between ${student.subscription_active ? '' : 'border-red-400/20'}`}>
           <div className="flex items-center gap-3">
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${subscriptionPaid ? 'bg-teal-500/15' : 'bg-red-500/15'}`}>
-              <Wallet className={subscriptionPaid ? 'text-teal-400' : 'text-red-400'} size={20} />
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${student.subscription_active ? 'bg-teal-500/15' : 'bg-red-500/15'}`}>
+              <Wallet className={student.subscription_active ? 'text-teal-400' : 'text-red-400'} size={20} />
             </div>
-            <div>
+            <div className="text-right">
               <p className="text-slate-500 text-xs">حالة الاشتراك</p>
-              <p className={`font-bold ${subscriptionPaid ? 'text-teal-300' : 'text-red-400'}`}>
-                {subscriptionPaid ? 'مفعّل لهذا الشهر' : 'غير مفعّل — برجاء التواصل مع السنتر'}
+              <p className={`font-bold ${student.subscription_active ? 'text-teal-300' : 'text-red-400'}`}>
+                {student.subscription_active ? 'مفعّل' : 'اضغط هنا للاشتراك'}
               </p>
             </div>
           </div>
-        </div>
+        </button>
 
         <div className="grid sm:grid-cols-2 gap-4">
           <div className="glass-card p-6">
@@ -143,19 +131,11 @@ export default function StudentDashboard() {
               <span>قريبًا — مكتبة الفيديوهات جارٍ تجهيزها</span>
             </div>
           </div>
-          <button onClick={() => router.push('/subscription')} className={`glass-card p-6 mb-6 w-full flex items-center justify-between ${student.subscription_active ? '' : 'border-red-400/20'}`}>
-                      <div className="flex items-center gap-3">
-                                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${student.subscription_active ? 'bg-teal-500/15' : 'bg-red-500/15'}`}>
-                                                <Wallet className={student.subscription_active ? 'text-teal-400' : 'text-red-400'} size={20} />
-                                                            </div>
-                                                                        <div className="text-right">
-                                                                                      <p className="text-slate-500 text-xs">حالة الاشتراك</p>
-                                                                                                    <p className={`font-bold ${student.subscription_active ? 'text-teal-300' : 'text-red-400'}`}>
-                                                                                                                    {student.subscription_active ? 'مفعّل' : 'اضغط هنا للاشتراك'}
-                                                                                                                                  </p>
-                                                                                                                                              </div>
-                                                                                                                                                        </div>
-                                                                                                                                                                </button>
+          <div className="glass-card p-6">
+            <div className="flex items-center gap-2 mb-3">
+              <Bell className="text-amber-400" size={18} />
+              <span className="text-slate-300 font-medium text-sm">آخر الإعلانات</span>
+            </div>
             <div className="flex items-center gap-2 text-slate-500 text-sm">
               <Sparkles size={16} />
               <span>لا يوجد إعلانات جديدة حاليًا</span>
