@@ -143,11 +143,19 @@ export default function StudentDashboard() {
               <span>قريبًا — مكتبة الفيديوهات جارٍ تجهيزها</span>
             </div>
           </div>
-          <div className="glass-card p-6">
-            <div className="flex items-center gap-2 mb-3">
-              <Bell className="text-amber-400" size={18} />
-              <span className="text-slate-300 font-medium text-sm">آخر الإعلانات</span>
-            </div>
+          <button onClick={() => router.push('/subscription')} className={`glass-card p-6 mb-6 w-full flex items-center justify-between ${student.subscription_active ? '' : 'border-red-400/20'}`}>
+                      <div className="flex items-center gap-3">
+                                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${student.subscription_active ? 'bg-teal-500/15' : 'bg-red-500/15'}`}>
+                                                <Wallet className={student.subscription_active ? 'text-teal-400' : 'text-red-400'} size={20} />
+                                                            </div>
+                                                                        <div className="text-right">
+                                                                                      <p className="text-slate-500 text-xs">حالة الاشتراك</p>
+                                                                                                    <p className={`font-bold ${student.subscription_active ? 'text-teal-300' : 'text-red-400'}`}>
+                                                                                                                    {student.subscription_active ? 'مفعّل' : 'اضغط هنا للاشتراك'}
+                                                                                                                                  </p>
+                                                                                                                                              </div>
+                                                                                                                                                        </div>
+                                                                                                                                                                </button>
             <div className="flex items-center gap-2 text-slate-500 text-sm">
               <Sparkles size={16} />
               <span>لا يوجد إعلانات جديدة حاليًا</span>
