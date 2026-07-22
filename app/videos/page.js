@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import AppShell from '@/components/AppShell';
 import { supabase } from '@/lib/supabaseClient';
-import { Plus, Trash2, Pencil, ChevronUp, ChevronDown, Video as VideoIcon, X, FolderPlus, Layers, Package, Check, Upload, Link2 } from 'lucide-react';
+import { Plus, Trash2, Pencil, ChevronUp, ChevronDown, Video as VideoIcon, X, FolderPlus, Layers, Package, Check } from 'lucide-react';
 
 const GRADES = ['الصف الأول الثانوي', 'الصف الثاني الثانوي', 'الصف الثالث الثانوي'];
 const TRACKS = ['ثالثة ثانوي', 'تانية ثانوي'];
@@ -79,17 +79,9 @@ export default function VideosPage() {
   const saveVideo = async (form) => {
     let error;
     const payload = {
-      title: form.title, description: form.description,
+      title: form.title, description: form.description, video_url: form.videoUrl, storage_path: null,
       target_grades: form.target_grades, is_downloadable: form.is_downloadable,
     };
-    if (form.storagePath) {
-      payload.storage_path = form.storagePath;
-      payload.video_url = null;
-    } else if (form.videoUrl) {
-      payload.video_url = form.videoUrl;
-      payload.storage_path = null;
-    }
-
     if (form.id) {
       ({ error } = await supabase.from('videos').update(payload).eq('id', form.id));
     } else {
@@ -159,9 +151,7 @@ export default function VideosPage() {
                 <VideoIcon size={18} className="text-teal-400 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-slate-200 text-sm font-medium truncate">{v.title}</p>
-                  <p className="text-slate-500 text-xs truncate flex items-center gap-1">
-                    {v.storage_path ? '🔒 مرفوع بأمان' : '🔗 رابط خارجي'} · {(v.target_grades || []).join('، ') || 'كل الصفوف'}
-                  </p>
+                  <p className="text-slate-500 text-xs truncate">{(v.target_grades || []).join('، ') || 'كل الصفوف'}</p>
                 </div>
                 <button onClick={() => setModal({ chapterId: ch.id, video: v })} className="p-2 text-slate-400 hover:text-amber-400"><Pencil size={16} /></button>
                 <button onClick={() => deleteVideo(v.id)} className="p-2 text-slate-400 hover:text-red-400"><Trash2 size={16} /></button>
@@ -263,10 +253,7 @@ export default function VideosPage() {
 function VideoModal({ chapterId, video, onClose, onSave }) {
   const [title, setTitle] = useState(video?.title || '');
   const [description, setDescription] = useState(video?.description || '');
-  const [mode, setMode] = useState(video?.storage_path ? 'upload' : 'link');
   const [videoUrl, setVideoUrl] = useState(video?.video_url || '');
-  const [file, setFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
   const [grades, setGrades] = useState(video?.target_grades || []);
   const [downloadable, setDownloadable] = useState(video?.is_downloadable || false);
 
@@ -274,27 +261,10 @@ function VideoModal({ chapterId, video, onClose, onSave }) {
     setGrades((prev) => prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    let storagePath = video?.storage_path || null;
-
-    if (mode === 'upload' && file) {
-      setUploading(true);
-      const ext = file.name.split('.').pop();
-      const path = `${chapterId}/${crypto.randomUUID()}.${ext}`;
-      const { error: uploadError } = await supabase.storage.from('course-videos').upload(path, file);
-      setUploading(false);
-      if (uploadError) {
-        alert(`فشل رفع الفيديو: ${uploadError.message}`);
-        return;
-      }
-      storagePath = path;
-    }
-
     onSave({
-      id: video?.id, chapter_id: chapterId, title, description,
-      videoUrl: mode === 'link' ? videoUrl : null,
-      storagePath: mode === 'upload' ? storagePath : null,
+      id: video?.id, chapter_id: chapterId, title, description, videoUrl,
       target_grades: grades, is_downloadable: downloadable,
     });
   };
@@ -314,32 +284,10 @@ function VideoModal({ chapterId, video, onClose, onSave }) {
           <label className="text-sm text-slate-300 mb-1.5 block">الوصف</label>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="input-field" rows={2} />
         </div>
-
-        <div className="flex gap-2 glass-card p-1">
-          <button type="button" onClick={() => setMode('upload')}
-            className={`flex-1 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 ${mode === 'upload' ? 'bg-amber-500 text-navy-950' : 'text-slate-400'}`}>
-            <Upload size={14} /> رفع آمن (موصى به)
-          </button>
-          <button type="button" onClick={() => setMode('link')}
-            className={`flex-1 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 ${mode === 'link' ? 'bg-amber-500 text-navy-950' : 'text-slate-400'}`}>
-            <Link2 size={14} /> رابط خارجي
-          </button>
+        <div>
+          <label className="text-sm text-slate-300 mb-1.5 block">رابط الفيديو من يوتيوب (خليه Unlisted)</label>
+          <input required value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} className="input-field" placeholder="https://youtube.com/watch?v=..." />
         </div>
-
-        {mode === 'upload' ? (
-          <div>
-            <label className="text-sm text-slate-300 mb-1.5 block">اختر ملف الفيديو</label>
-            <input type="file" accept="video/*" onChange={(e) => setFile(e.target.files[0])} className="input-field text-slate-400 text-sm" />
-            {video?.storage_path && !file && <p className="text-teal-400 text-xs mt-1">فيديو مرفوع بالفعل — اختر ملف جديد للاستبدال فقط</p>}
-            <p className="text-slate-500 text-xs mt-1">🔒 هيتخزن بأمان، ومحدش يقدر يفتحه غير الطالب اللي اشترى</p>
-          </div>
-        ) : (
-          <div>
-            <label className="text-sm text-slate-300 mb-1.5 block">رابط الفيديو (YouTube أو Vimeo)</label>
-            <input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} className="input-field" placeholder="https://youtube.com/watch?v=..." />
-          </div>
-        )}
-
         <div>
           <label className="text-sm text-slate-300 mb-1.5 block">الصفوف المسموح لها بالمشاهدة</label>
           <div className="flex flex-wrap gap-2">
@@ -352,10 +300,7 @@ function VideoModal({ chapterId, video, onClose, onSave }) {
           </div>
           <p className="text-slate-500 text-xs mt-1">لو ماخترتش صف، الفيديو هيظهر لكل الطلاب</p>
         </div>
-
-        <button type="submit" disabled={uploading} className="btn-primary w-full">
-          {uploading ? 'جارٍ الرفع... متستناش يقفل الصفحة' : 'حفظ الفيديو'}
-        </button>
+        <button type="submit" className="btn-primary w-full">حفظ الفيديو</button>
       </form>
     </div>
   );
